@@ -16,10 +16,6 @@ const nextConfig = {
         protocol: "https",
         hostname: "euc.li",
       },
-      {
-        protocol: "https",
-        hostname: "regen-tips-git-dev-regentoken.vercel.app",
-      },
     ],
   },
 };

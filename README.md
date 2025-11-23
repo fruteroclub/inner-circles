@@ -1,14 +1,14 @@
-# 🧩 Inner Circles Loan System
+# Inner Circles Loan System
 
 A **no-collateral, trust-based lending protocol** built on top of [Circles](https://aboutcircles.com/), designed to provide fair access to credit for community members based on **social trust, not assets**.
 
-## 🔥 Live Pilot: [Frutero.Club](https://frutero.club)
+## Live Pilot: [Frutero.Club](https://frutero.club)
 
 Frutero.Club is a talent accelerator for LatAm builders, where members build reputation through contributions to real-world projects. We’re piloting this protocol in Mexico to offer **community-backed liquidity for builders and operators** in need of short-term financial support.
 
 ---
 
-## 💡 How It Works
+## How It Works
 
 1. **Member applies for a loan** in CRC from the Circles Group treasury.
 2. **Vouching phase**: At least 3 trusted community members vouch via Telegram bot, each depositing a fixed amount of CRC into escrow.
@@ -31,7 +31,7 @@ Frutero.Club is a talent accelerator for LatAm builders, where members build rep
 
 ---
 
-## 📦 Stack
+## Stack
 
 - **Circles SDK** for token and group logic
 - **Relative Trust Score API** to assess borrower reputation
@@ -42,7 +42,7 @@ Frutero.Club is a talent accelerator for LatAm builders, where members build rep
 
 ---
 
-## 🧪 Use Cases
+## Use Cases
 
 - Talent accelerators
 - DAO-native job boards
@@ -52,7 +52,7 @@ Frutero.Club is a talent accelerator for LatAm builders, where members build rep
 
 ---
 
-## 🛠️ Run Locally
+## Run Locally
 
 ```bash
 # Clone the repo

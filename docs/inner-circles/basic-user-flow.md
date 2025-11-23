@@ -8,6 +8,7 @@ The user starts the interaction with the Credit System.
 
 Back-end verifies:
 
+<<<<<<< HEAD
 - They are a member of the Frutero Club Circles Group.
 
   - Chain: Gnosis Chain
@@ -15,6 +16,13 @@ Back-end verifies:
   - Circles Group address: 0xa646fc7956376a641d30448a0473348bcc5638e5
 
 - They hold the community ENS "membership" tag (ENS subname).
+=======
+- They are a member of the Frutero Inner Circles group.
+
+  - Chain: Gnosis Chain
+  - Chain Id: 100
+  - Circles Group address: 0xf6e5f26d647fc0494e749823e7feb33df3641acc
+>>>>>>> 57ea528 (add user-flow docs)
 
 If not, prompt to apply by building enough inbound trust in the Circles trust graph.
 

@@ -2,9 +2,9 @@
 
 A **no-collateral, trust-based lending protocol** built on top of [Circles](https://aboutcircles.com/), designed to provide fair access to credit for community members based on **social trust, not assets**.
 
-## Live Pilot: [Frutero.Club](https://frutero.club)
+## Live Pilot: [Inner Circles](https://inner-circles.vercel.app)
 
-Frutero.Club is a talent accelerator for LatAm builders, where members build reputation through contributions to real-world projects. We’re piloting this protocol in Mexico to offer **community-backed liquidity for builders and operators** in need of short-term financial support.
+Frutero Club is a talent accelerator for LatAm builders, where members build reputation through contributions to real-world projects. We’re piloting this protocol in Mexico to offer **community-backed liquidity for builders and operators** in need of short-term financial support.
 
 ---
 
@@ -28,6 +28,38 @@ Frutero.Club is a talent accelerator for LatAm builders, where members build rep
    - On failure, borrower's **ENS tag is revoked**
    - Telegram alerts group to adjust trust graph
    - Future loan access becomes harder (higher quorum required)
+
+---
+
+## Smart Contracts
+
+The Inner Circles Lending Market smart contract is **deployed and verified on Gnosis Chain (mainnet)**.
+
+### Contract Information
+
+- **Network**: Gnosis Chain (Chain ID: 100)
+- **Contract Address**: 0xD8912DF919BAf91169EdfEa33D828dca1cc686E4
+- **Status**: Deployed and verified
+- **Block Explorer**: [GnosisScan](https://gnosisscan.io/address/0xD8912DF919BAf91169EdfEa33D828dca1cc686E4)
+- **Contracts Repository**: [Github](https://github.com/troopdegen/inner-circles-contracts)
+
+### Environment Variables
+
+The contract address is configured in your `.env` file:
+
+```bash
+# .env (lines 10-11)
+NEXT_PUBLIC_LENDING_MARKET_ADDRESS=0x... # Deployed contract address on Gnosis Chain
+```
+
+### Contract Details
+
+- **Contract Name**: InnerCirclesLendingMarket
+- **Network**: Gnosis Chain Mainnet
+- **Verification**: Verified on GnosisScan
+- **ABI**: Available in `src/lib/contracts/InnerCirclesLendingMarketABI.ts`
+
+For contract interaction, the address is automatically loaded from the environment variable `NEXT_PUBLIC_LENDING_MARKET_ADDRESS` at runtime.
 
 ---
 
@@ -56,12 +88,12 @@ Frutero.Club is a talent accelerator for LatAm builders, where members build rep
 
 ```bash
 # Clone the repo
-git clone https://github.com/your-org/inner-circles-loan.git
+git clone https://github.com/fruteroclub/inner-circles-loan.git
 
 # Install dependencies
-cd inner-circles-loan
-npm install
+cd inner-circles
+bun install
 
 # Start local dev server
-npm run dev
+bun dev
 ```

@@ -58,12 +58,14 @@ async function readMembers(): Promise<Map<number, StoredMember>> {
     const data = await fs.readFile(STORAGE_FILE, "utf-8");
     const members: StoredMember[] = JSON.parse(data);
     return new Map(members.map((m) => [m.telegramUserId, m]));
-  } catch (error: any) {
+  } catch (error: unknown) {
     // File doesn't exist or is empty - return empty map
-    if (error.code === "ENOENT" || error.message.includes("Unexpected end")) {
+    const nodeError = error as NodeJS.ErrnoException;
+    if (nodeError.code === "ENOENT" || (error instanceof Error && error.message.includes("Unexpected end"))) {
       return new Map();
     }
-    throw new Error(`Failed to read members: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to read members: ${errorMessage}`);
   }
 }
 
@@ -75,8 +77,9 @@ async function writeMembers(members: Map<number, StoredMember>): Promise<void> {
     await ensureDataDirectory();
     const membersArray = Array.from(members.values());
     await fs.writeFile(STORAGE_FILE, JSON.stringify(membersArray, null, 2), "utf-8");
-  } catch (error: any) {
-    throw new Error(`Failed to write members: ${error.message}`);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to write members: ${errorMessage}`);
   }
 }
 

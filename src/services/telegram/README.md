@@ -1,15 +1,22 @@
 # Telegram Bot Service
 
-This service implements a Telegram bot using Telegraf.js for the Circles Credit application.
+This service implements an informative Telegram bot using Telegraf.js for the Circles Credit application.
 
-## Commands
+## Overview
 
-The bot supports the following commands:
+This is a **read-only, informative bot** that sends notifications to participants about loan-related events. The bot does not support interactive commands - it only sends automatic notifications.
 
-- `/request_loan` - Request a new loan from the community
-- `/loan_status` - Check the status of your active loans
-- `/vouch_status` - View your vouch count and reputation score
-- `/repay_loan` - Repay an existing loan
+## Notifications
+
+The bot sends notifications for the following events:
+
+- **Loan Requests** - When a new loan request is created
+- **Vouching Accepted** - When someone vouches for a loan requester
+- **Funding Obtained** - When a loan reaches full funding
+- **Loan Accepted/Started** - When a loan is accepted and funds are disbursed
+- **Loan Repaid** - When a loan is successfully repaid
+- **Loan Default** - When a loan defaults
+- **Trust Cancellation Recommendation** - When the system recommends removing trust from a user
 
 ## Setup
 
@@ -46,33 +53,53 @@ bun run src/scripts/telegram-bot.ts
 
 ```
 src/services/telegram/
-├── bot.ts              # Bot initialization and command registration
+├── bot.ts              # Bot initialization (informative only)
+├── notifications.ts    # Notification functions for loan events
 ├── types.ts            # TypeScript types and interfaces
-├── commands/           # Command handlers
-│   ├── request-loan.ts
-│   ├── loan-status.ts
-│   ├── vouch-status.ts
-│   └── repay-loan.ts
 └── index.ts            # Public exports
 ```
 
-## Backend Integration
+## Usage
 
-Each command handler is structured to easily integrate with backend services:
+The bot is used programmatically by calling notification functions from your backend services:
 
 ```typescript
-// Example: In request-loan.ts
-// TODO: Call backend service to request loan
-// const loanService = await import('@/services/loans/loan-service')
-// const result = await loanService.requestLoan(commandContext, { amount, currency })
+import { notifyLoanRequest, notifyLoanRepaid } from '@/services/telegram'
+
+// Send a loan request notification
+await notifyLoanRequest({
+  loanId: 'LOAN-001',
+  requesterAddress: '0x...',
+  requesterName: 'Alice',
+  amount: '100 CRC',
+  term: '30 days',
+  chatId: 123456789
+})
+
+// Send a loan repaid notification
+await notifyLoanRepaid({
+  loanId: 'LOAN-001',
+  requesterAddress: '0x...',
+  requesterName: 'Alice',
+  amount: '100 CRC',
+  chatId: 123456789
+})
 ```
 
-When backend services are ready, simply uncomment and implement the service calls in each command handler.
+## Available Notification Functions
+
+- `notifyLoanRequest()` - Notify about new loan requests
+- `notifyVouchingAccepted()` - Notify when vouching is accepted
+- `notifyFundingObtained()` - Notify when funding is complete
+- `notifyLoanAccepted()` - Notify when loan starts
+- `notifyLoanRepaid()` - Notify when loan is repaid
+- `notifyLoanDefault()` - Notify when loan defaults
+- `notifyTrustCancellationRecommendation()` - Recommend trust cancellation
 
 ## Error Handling
 
 The bot includes error handling that:
-- Catches and logs errors
-- Sends user-friendly error messages
+- Catches and logs errors silently
 - Prevents the bot from crashing on unexpected errors
+- Continues operating even if individual notifications fail
 

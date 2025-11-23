@@ -5,7 +5,7 @@
  * This service can be used in API routes or background workers.
  */
 
-import { createPublicClient, http, type Address, type PublicClient } from "viem";
+import { createPublicClient, http, decodeEventLog, type Address, type PublicClient } from "viem";
 import { gnosis } from "viem/chains";
 import { lendingMarketContract } from "@/lib/contracts/config";
 import {
@@ -19,6 +19,7 @@ import {
 } from "./notifications";
 import { formatEther } from "viem";
 import { getTelegramUserIdByAddress, getMemberByAddress } from "./member-lookup";
+import type { ContractLoanData } from "@/types/loans";
 
 /**
  * Create a public client for reading contract data
@@ -82,13 +83,13 @@ async function handleVouched(
   try {
     // Get borrower address from loan
     const publicClient = createClient();
-    const loan = await publicClient.readContract({
+    const loan = (await publicClient.readContract({
       ...lendingMarketContract,
       functionName: "getLoan",
       args: [args.loanId],
-    });
+    })) as ContractLoanData;
 
-    const borrower = Array.isArray(loan) ? loan[0] : (loan as any).borrower;
+    const borrower = Array.isArray(loan) ? loan[0] : (loan as { borrower: Address }).borrower;
 
     await notifyVouchingAccepted({
       loanId: args.loanId.toString(),
@@ -113,11 +114,11 @@ async function handleLoanConfirmed(
 ): Promise<void> {
   try {
     const publicClient = createClient();
-    const loan = await publicClient.readContract({
+    const loan = (await publicClient.readContract({
       ...lendingMarketContract,
       functionName: "getLoan",
       args: [args.loanId],
-    });
+    })) as ContractLoanData;
 
     const loanData = Array.isArray(loan)
       ? {
@@ -126,9 +127,9 @@ async function handleLoanConfirmed(
           termDuration: loan[3],
         }
       : {
-          amountRequested: (loan as any).amountRequested,
-          interestRate: (loan as any).interestRate,
-          termDuration: (loan as any).termDuration,
+          amountRequested: (loan as { amountRequested: bigint }).amountRequested,
+          interestRate: (loan as { interestRate: bigint }).interestRate,
+          termDuration: (loan as { termDuration: bigint }).termDuration,
         };
 
     await notifyLoanAccepted({
@@ -157,11 +158,11 @@ async function handleCrowdfunded(
 ): Promise<void> {
   try {
     const publicClient = createClient();
-    const loan = await publicClient.readContract({
+    const loan = (await publicClient.readContract({
       ...lendingMarketContract,
       functionName: "getLoan",
       args: [args.loanId],
-    });
+    })) as ContractLoanData;
 
     const loanData = Array.isArray(loan)
       ? {
@@ -170,9 +171,9 @@ async function handleCrowdfunded(
           amountFunded: loan[2],
         }
       : {
-          borrower: (loan as any).borrower,
-          amountRequested: (loan as any).amountRequested,
-          amountFunded: (loan as any).amountFunded,
+          borrower: (loan as { borrower: Address }).borrower,
+          amountRequested: (loan as { amountRequested: bigint }).amountRequested,
+          amountFunded: (loan as { amountFunded: bigint }).amountFunded,
         };
 
     // Check if fully funded
@@ -202,11 +203,11 @@ async function handleLoanFunded(
 ): Promise<void> {
   try {
     const publicClient = createClient();
-    const loan = await publicClient.readContract({
+    const loan = (await publicClient.readContract({
       ...lendingMarketContract,
       functionName: "getLoan",
       args: [args.loanId],
-    });
+    })) as ContractLoanData;
 
     const loanData = Array.isArray(loan)
       ? {
@@ -216,10 +217,10 @@ async function handleLoanFunded(
           termDuration: loan[3],
         }
       : {
-          borrower: (loan as any).borrower,
-          amountRequested: (loan as any).amountRequested,
-          interestRate: (loan as any).interestRate,
-          termDuration: (loan as any).termDuration,
+          borrower: (loan as { borrower: Address }).borrower,
+          amountRequested: (loan as { amountRequested: bigint }).amountRequested,
+          interestRate: (loan as { interestRate: bigint }).interestRate,
+          termDuration: (loan as { termDuration: bigint }).termDuration,
         };
 
     await notifyLoanAccepted({
@@ -250,18 +251,18 @@ async function handleRepaymentMade(
 ): Promise<void> {
   try {
     const publicClient = createClient();
-    const loan = await publicClient.readContract({
+    const loan = (await publicClient.readContract({
       ...lendingMarketContract,
       functionName: "getLoan",
       args: [args.loanId],
-    });
+    })) as ContractLoanData;
 
     const loanData = Array.isArray(loan)
       ? {
           state: loan[10],
         }
       : {
-          state: (loan as any).state,
+          state: (loan as { state: number }).state,
         };
 
     // Only notify on full repayment (state = Repaid = 4)
@@ -290,11 +291,11 @@ async function handleLoanDefaulted(
 ): Promise<void> {
   try {
     const publicClient = createClient();
-    const loan = await publicClient.readContract({
+    const loan = (await publicClient.readContract({
       ...lendingMarketContract,
       functionName: "getLoan",
       args: [args.loanId],
-    });
+    })) as ContractLoanData;
 
     const totalOwed = await publicClient.readContract({
       ...lendingMarketContract,
@@ -313,7 +314,7 @@ async function handleLoanDefaulted(
           amountRequested: loan[1],
         }
       : {
-          amountRequested: (loan as any).amountRequested,
+          amountRequested: (loan as { amountRequested: bigint }).amountRequested,
         };
 
     const unpaidAmount = (totalOwed as bigint) - (amountRepaid as bigint);
@@ -357,33 +358,33 @@ async function handleMembershipSuspended(
  */
 export async function processEvent(
   eventName: string,
-  args: any,
+  args: Record<string, unknown>,
   chatId?: number
 ): Promise<void> {
   switch (eventName) {
     case "LoanRequestCreated":
-      await handleLoanRequestCreated(args, chatId);
+      await handleLoanRequestCreated(args as { loanId: bigint; borrower: Address; amount: bigint; termDuration: bigint }, chatId);
       break;
     case "Vouched":
-      await handleVouched(args, chatId);
+      await handleVouched(args as { loanId: bigint; voucher: Address; amount: bigint }, chatId);
       break;
     case "LoanConfirmed":
-      await handleLoanConfirmed(args, chatId);
+      await handleLoanConfirmed(args as { loanId: bigint; borrower: Address }, chatId);
       break;
     case "Crowdfunded":
-      await handleCrowdfunded(args, chatId);
+      await handleCrowdfunded(args as { loanId: bigint; lender: Address; amount: bigint }, chatId);
       break;
     case "LoanFunded":
-      await handleLoanFunded(args, chatId);
+      await handleLoanFunded(args as { loanId: bigint; totalAmount: bigint }, chatId);
       break;
     case "RepaymentMade":
-      await handleRepaymentMade(args, chatId);
+      await handleRepaymentMade(args as { loanId: bigint; borrower: Address; principal: bigint; interest: bigint; totalRepaid: bigint }, chatId);
       break;
     case "LoanDefaulted":
-      await handleLoanDefaulted(args, chatId);
+      await handleLoanDefaulted(args as { loanId: bigint; borrower: Address }, chatId);
       break;
     case "MembershipSuspended":
-      await handleMembershipSuspended(args, chatId);
+      await handleMembershipSuspended(args as { loanId: bigint; borrower: Address }, chatId);
       break;
     default:
       console.warn(`Unknown event: ${eventName}`);
@@ -413,7 +414,7 @@ export async function listenToEvents(
     for (const log of logs) {
       try {
         // Decode the log using the contract ABI
-        const decoded = await publicClient.decodeEventLog({
+        const decoded = decodeEventLog({
           abi: lendingMarketContract.abi,
           data: log.data,
           topics: log.topics,
@@ -421,7 +422,7 @@ export async function listenToEvents(
 
         // For LoanRequestCreated, automatically look up borrower's Telegram ID
         let targetChatId = chatId;
-        if (decoded.eventName === "LoanRequestCreated" && decoded.args?.borrower) {
+        if (decoded.eventName === "LoanRequestCreated" && decoded.args && typeof decoded.args === 'object' && 'borrower' in decoded.args) {
           const borrowerTelegramId = getTelegramUserIdByAddress(decoded.args.borrower as Address);
           if (borrowerTelegramId) {
             targetChatId = borrowerTelegramId;
@@ -429,7 +430,7 @@ export async function listenToEvents(
           }
         }
 
-        await processEvent(decoded.eventName, decoded.args, targetChatId);
+        await processEvent(decoded.eventName || '', decoded.args as unknown as Record<string, unknown>, targetChatId);
       } catch (error) {
         // Skip logs that can't be decoded (might be from other contracts)
         console.warn("Could not decode log:", error);

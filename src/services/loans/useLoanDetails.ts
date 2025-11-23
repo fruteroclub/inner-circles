@@ -2,7 +2,8 @@
 
 import { useReadContract } from "wagmi";
 import { lendingMarketContract } from "@/lib/contracts/config";
-import type { Loan } from "@/types/loans";
+import type { Address } from "viem";
+import type { Loan, ContractLoanData } from "@/types/loans";
 import { LoanState } from "@/types/loans";
 
 /**
@@ -34,13 +35,15 @@ export function useLoanDetails(loanId: bigint | null) {
         // Contract returns struct as tuple or object depending on ABI decoding
         let state: LoanState;
         
-        if (Array.isArray(data)) {
+        const contractLoan = data as unknown as ContractLoanData;
+        if (Array.isArray(contractLoan)) {
           // Tuple format (array access)
           // State is at index 10 (11th element, 0-indexed)
-          state = data[10] as LoanState;
+          state = contractLoan[10] as LoanState;
         } else {
           // Object format (named properties)
-          state = (data as any).state as LoanState;
+          const loanObj = contractLoan as Extract<ContractLoanData, { state: LoanState }>;
+          state = loanObj.state as LoanState;
         }
 
         // Active states that need polling: Vouching, Crowdfunding, Funded
@@ -58,38 +61,42 @@ export function useLoanDetails(loanId: bigint | null) {
 
   // Transform contract data to Loan type
   // Handle both tuple format (array) and object format
-  const loan: Loan | null = loanData
-    ? (Array.isArray(loanData)
+  const contractLoan = loanData as ContractLoanData | null;
+  const loan: Loan | null = contractLoan
+    ? (Array.isArray(contractLoan)
         ? {
             // Tuple format (array access)
-            borrower: loanData[0] as Loan["borrower"],
-            amountRequested: loanData[1] as bigint,
-            amountFunded: loanData[2] as bigint,
-            termDuration: loanData[3] as bigint,
-            interestRate: loanData[4] as bigint,
-            createdAt: loanData[5] as bigint,
-            vouchingDeadline: loanData[6] as bigint,
-            crowdfundingDeadline: loanData[7] as bigint,
-            repaymentDeadline: loanData[8] as bigint,
-            gracePeriodEnd: loanData[9] as bigint,
-            state: loanData[10] as LoanState,
-            voucherCount: loanData[11] as bigint,
+            borrower: contractLoan[0] as Loan["borrower"],
+            amountRequested: contractLoan[1] as bigint,
+            amountFunded: contractLoan[2] as bigint,
+            termDuration: contractLoan[3] as bigint,
+            interestRate: contractLoan[4] as bigint,
+            createdAt: contractLoan[5] as bigint,
+            vouchingDeadline: contractLoan[6] as bigint,
+            crowdfundingDeadline: contractLoan[7] as bigint,
+            repaymentDeadline: contractLoan[8] as bigint,
+            gracePeriodEnd: contractLoan[9] as bigint,
+            state: contractLoan[10] as LoanState,
+            voucherCount: contractLoan[11] as bigint,
           }
-        : {
-            // Object format (named properties)
-            borrower: (loanData as any).borrower as Loan["borrower"],
-            amountRequested: (loanData as any).amountRequested as bigint,
-            amountFunded: (loanData as any).amountFunded as bigint,
-            termDuration: (loanData as any).termDuration as bigint,
-            interestRate: (loanData as any).interestRate as bigint,
-            createdAt: (loanData as any).createdAt as bigint,
-            vouchingDeadline: (loanData as any).vouchingDeadline as bigint,
-            crowdfundingDeadline: (loanData as any).crowdfundingDeadline as bigint,
-            repaymentDeadline: (loanData as any).repaymentDeadline as bigint,
-            gracePeriodEnd: (loanData as any).gracePeriodEnd as bigint,
-            state: (loanData as any).state as LoanState,
-            voucherCount: (loanData as any).voucherCount as bigint,
-          })
+        : (() => {
+            const loanObj = contractLoan as Extract<ContractLoanData, { borrower: Address }>;
+            return {
+              // Object format (named properties)
+              borrower: loanObj.borrower as Loan["borrower"],
+              amountRequested: loanObj.amountRequested as bigint,
+              amountFunded: loanObj.amountFunded as bigint,
+              termDuration: loanObj.termDuration as bigint,
+              interestRate: loanObj.interestRate as bigint,
+              createdAt: loanObj.createdAt as bigint,
+              vouchingDeadline: loanObj.vouchingDeadline as bigint,
+              crowdfundingDeadline: loanObj.crowdfundingDeadline as bigint,
+              repaymentDeadline: loanObj.repaymentDeadline as bigint,
+              gracePeriodEnd: loanObj.gracePeriodEnd as bigint,
+              state: loanObj.state as LoanState,
+              voucherCount: loanObj.voucherCount as bigint,
+            };
+          })())
     : null;
 
   return {

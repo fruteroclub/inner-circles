@@ -8,8 +8,8 @@
 import { createPublicClient, http, type Address, type PublicClient } from "viem";
 import { gnosis } from "viem/chains";
 import { lendingMarketContract } from "@/lib/contracts/config";
-import { notifyLoanDefault } from "@/services/telegram/notifications";
 import { formatEther } from "viem";
+import type { ContractLoanData } from "@/types/loans";
 
 /**
  * Create a public client for reading contract data
@@ -88,11 +88,11 @@ export async function checkLoanGracePeriod(
   const publicClient = createClient();
 
   try {
-    const loan = await publicClient.readContract({
+    const loan = (await publicClient.readContract({
       ...lendingMarketContract,
       functionName: "getLoan",
       args: [loanId],
-    });
+    })) as ContractLoanData;
 
     const loanData = Array.isArray(loan)
       ? {
@@ -102,10 +102,10 @@ export async function checkLoanGracePeriod(
           gracePeriodEnd: loan[9],
         }
       : {
-          borrower: (loan as any).borrower,
-          state: (loan as any).state,
-          repaymentDeadline: (loan as any).repaymentDeadline,
-          gracePeriodEnd: (loan as any).gracePeriodEnd,
+          borrower: (loan as { borrower: Address }).borrower,
+          state: (loan as { state: number }).state,
+          repaymentDeadline: (loan as { repaymentDeadline: bigint }).repaymentDeadline,
+          gracePeriodEnd: (loan as { gracePeriodEnd: bigint }).gracePeriodEnd,
         };
 
     // Only check funded loans (state = 3)

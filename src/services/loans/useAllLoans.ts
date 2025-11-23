@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { usePublicClient } from "wagmi";
+import type { Address } from "viem";
 import { lendingMarketContract } from "@/lib/contracts/config";
-import type { Loan } from "@/types/loans";
+import type { Loan, ContractLoanData } from "@/types/loans";
 import { LoanState } from "@/types/loans";
 
 /**
@@ -62,36 +63,38 @@ export function useAllLoans() {
               args: [i],
             })
             .then((loanData) => {
+              const contractLoan = loanData as ContractLoanData;
               // Transform contract data to Loan type
-              if (Array.isArray(loanData)) {
+              if (Array.isArray(contractLoan)) {
                 return {
-                  borrower: loanData[0] as Loan["borrower"],
-                  amountRequested: loanData[1] as bigint,
-                  amountFunded: loanData[2] as bigint,
-                  termDuration: loanData[3] as bigint,
-                  interestRate: loanData[4] as bigint,
-                  createdAt: loanData[5] as bigint,
-                  vouchingDeadline: loanData[6] as bigint,
-                  crowdfundingDeadline: loanData[7] as bigint,
-                  repaymentDeadline: loanData[8] as bigint,
-                  gracePeriodEnd: loanData[9] as bigint,
-                  state: loanData[10] as LoanState,
-                  voucherCount: loanData[11] as bigint,
+                  borrower: contractLoan[0] as Loan["borrower"],
+                  amountRequested: contractLoan[1] as bigint,
+                  amountFunded: contractLoan[2] as bigint,
+                  termDuration: contractLoan[3] as bigint,
+                  interestRate: contractLoan[4] as bigint,
+                  createdAt: contractLoan[5] as bigint,
+                  vouchingDeadline: contractLoan[6] as bigint,
+                  crowdfundingDeadline: contractLoan[7] as bigint,
+                  repaymentDeadline: contractLoan[8] as bigint,
+                  gracePeriodEnd: contractLoan[9] as bigint,
+                  state: contractLoan[10] as LoanState,
+                  voucherCount: contractLoan[11] as bigint,
                 };
               } else {
+                const loanObj = contractLoan as Extract<ContractLoanData, { borrower: Address }>;
                 return {
-                  borrower: (loanData as any).borrower as Loan["borrower"],
-                  amountRequested: (loanData as any).amountRequested as bigint,
-                  amountFunded: (loanData as any).amountFunded as bigint,
-                  termDuration: (loanData as any).termDuration as bigint,
-                  interestRate: (loanData as any).interestRate as bigint,
-                  createdAt: (loanData as any).createdAt as bigint,
-                  vouchingDeadline: (loanData as any).vouchingDeadline as bigint,
-                  crowdfundingDeadline: (loanData as any).crowdfundingDeadline as bigint,
-                  repaymentDeadline: (loanData as any).repaymentDeadline as bigint,
-                  gracePeriodEnd: (loanData as any).gracePeriodEnd as bigint,
-                  state: (loanData as any).state as LoanState,
-                  voucherCount: (loanData as any).voucherCount as bigint,
+                  borrower: loanObj.borrower as Loan["borrower"],
+                  amountRequested: loanObj.amountRequested as bigint,
+                  amountFunded: loanObj.amountFunded as bigint,
+                  termDuration: loanObj.termDuration as bigint,
+                  interestRate: loanObj.interestRate as bigint,
+                  createdAt: loanObj.createdAt as bigint,
+                  vouchingDeadline: loanObj.vouchingDeadline as bigint,
+                  crowdfundingDeadline: loanObj.crowdfundingDeadline as bigint,
+                  repaymentDeadline: loanObj.repaymentDeadline as bigint,
+                  gracePeriodEnd: loanObj.gracePeriodEnd as bigint,
+                  state: loanObj.state as LoanState,
+                  voucherCount: loanObj.voucherCount as bigint,
                 };
               }
             })

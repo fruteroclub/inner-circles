@@ -9,6 +9,7 @@ import { createPublicClient, http, type Address, type PublicClient } from "viem"
 import { gnosis } from "viem/chains";
 import { lendingMarketContract } from "@/lib/contracts/config";
 import { formatEther } from "viem";
+import type { ContractLoanData } from "@/types/loans";
 
 /**
  * Create a public client for reading contract data
@@ -88,11 +89,11 @@ export async function checkLoanForAutoRepayment(
 
   try {
     // Get loan data
-    const loan = await publicClient.readContract({
+    const loan = (await publicClient.readContract({
       ...lendingMarketContract,
       functionName: "getLoan",
       args: [loanId],
-    });
+    })) as ContractLoanData;
 
     const loanData = Array.isArray(loan)
       ? {
@@ -101,9 +102,9 @@ export async function checkLoanForAutoRepayment(
           repaymentDeadline: loan[8],
         }
       : {
-          borrower: (loan as any).borrower,
-          state: (loan as any).state,
-          repaymentDeadline: (loan as any).repaymentDeadline,
+          borrower: (loan as { borrower: Address }).borrower,
+          state: (loan as { state: number }).state,
+          repaymentDeadline: (loan as { repaymentDeadline: bigint }).repaymentDeadline,
         };
 
     // Only check funded loans (state = 3)

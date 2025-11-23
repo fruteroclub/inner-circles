@@ -30,6 +30,28 @@ export function LoanActions({ loan, loanId, onActionSuccess }: LoanActionsProps)
   const hasTriggeredVouchAfterApproval = useRef(false);
   const hasTriggeredContributeAfterApproval = useRef(false);
   
+  const {
+    vouchForLoan,
+    isPending: isVouchingPending,
+    isSuccess: isVouchingSuccess,
+  } = useVouchForLoan({
+    onSuccess: () => {
+      onActionSuccess?.();
+    },
+  });
+
+  const {
+    contributeToLoan,
+    isPending: isContributingPending,
+    isSuccess: isContributingSuccess,
+  } = useContributeToLoan({
+    onSuccess: () => {
+      setShowContributeOptions(false);
+      setSelectedAmount(null);
+      onActionSuccess?.();
+    },
+  });
+
   // Approval for vouching (1 CRC)
   const vouchAmount = parseEther("1");
   const {
@@ -59,34 +81,49 @@ export function LoanActions({ loan, loanId, onActionSuccess }: LoanActionsProps)
     enabled: !!tokenAddress && (loan.state === LoanState.Vouching || loan.state === LoanState.Requested),
   });
   
+  // Approval for contributing (check for max amount needed: 5 CRC)
+  const maxContributionAmount = parseEther("5");
+  const {
+    approve: approveContribute,
+    needsApproval: needsContributeApproval,
+    isPending: isApprovingContribute,
+    isSuccess: isContributeApproved,
+  } = useApproveToken({
+    tokenAddress: tokenAddress,
+    spenderAddress: lendingMarketContract.address,
+    amount: maxContributionAmount,
+    onSuccess: () => {
+      // Prevent multiple calls
+      if (hasTriggeredContributeAfterApproval.current) {
+        return;
+      }
+      hasTriggeredContributeAfterApproval.current = true;
+      
+      // After approval, automatically trigger contribution if amount was selected
+      // Use setTimeout to prevent rapid state updates
+      setTimeout(() => {
+        if (loanId && selectedAmount) {
+          contributeToLoan(loanId, selectedAmount);
+          setSelectedAmount(null);
+        }
+      }, 500);
+    },
+    enabled: !!tokenAddress && loan.state === LoanState.Crowdfunding && !!selectedAmount,
+  });
+  
   // Reset ref when loanId changes or when approval is no longer needed
   useEffect(() => {
     if (!needsVouchApproval || !isVouchApproved) {
       hasTriggeredVouchAfterApproval.current = false;
     }
   }, [needsVouchApproval, isVouchApproved, loanId]);
-
-  const {
-    vouchForLoan,
-    isPending: isVouchingPending,
-    isSuccess: isVouchingSuccess,
-  } = useVouchForLoan({
-    onSuccess: () => {
-      onActionSuccess?.();
-    },
-  });
-
-  const {
-    contributeToLoan,
-    isPending: isContributingPending,
-    isSuccess: isContributingSuccess,
-  } = useContributeToLoan({
-    onSuccess: () => {
-      setShowContributeOptions(false);
-      setSelectedAmount(null);
-      onActionSuccess?.();
-    },
-  });
+  
+  // Reset ref when selectedAmount changes or when approval is no longer needed
+  useEffect(() => {
+    if (!selectedAmount || !needsContributeApproval || !isContributeApproved) {
+      hasTriggeredContributeAfterApproval.current = false;
+    }
+  }, [selectedAmount, needsContributeApproval, isContributeApproved, loanId]);
 
   // Don't show actions for borrower
   if (isBorrower) {
@@ -149,43 +186,6 @@ export function LoanActions({ loan, loanId, onActionSuccess }: LoanActionsProps)
       </Button>
     );
   }
-
-  // Approval for contributing (check for max amount needed: 5 CRC)
-  const maxContributionAmount = parseEther("5");
-  const {
-    approve: approveContribute,
-    needsApproval: needsContributeApproval,
-    isPending: isApprovingContribute,
-    isSuccess: isContributeApproved,
-  } = useApproveToken({
-    tokenAddress: tokenAddress,
-    spenderAddress: lendingMarketContract.address,
-    amount: maxContributionAmount,
-    onSuccess: () => {
-      // Prevent multiple calls
-      if (hasTriggeredContributeAfterApproval.current) {
-        return;
-      }
-      hasTriggeredContributeAfterApproval.current = true;
-      
-      // After approval, automatically trigger contribution if amount was selected
-      // Use setTimeout to prevent rapid state updates
-      setTimeout(() => {
-        if (loanId && selectedAmount) {
-          contributeToLoan(loanId, selectedAmount);
-          setSelectedAmount(null);
-        }
-      }, 500);
-    },
-    enabled: !!tokenAddress && loan.state === LoanState.Crowdfunding && !!selectedAmount,
-  });
-  
-  // Reset ref when selectedAmount changes or when approval is no longer needed
-  useEffect(() => {
-    if (!selectedAmount || !needsContributeApproval || !isContributeApproved) {
-      hasTriggeredContributeAfterApproval.current = false;
-    }
-  }, [selectedAmount, needsContributeApproval, isContributeApproved, loanId]);
 
   // Crowdfunding phase - show contribute button
   if (loan.state === LoanState.Crowdfunding) {

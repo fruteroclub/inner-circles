@@ -13,6 +13,40 @@ export enum LoanState {
 }
 
 /**
+ * Contract loan data can be returned as either a tuple (array) or object
+ * This type represents the raw contract return value from getLoan()
+ */
+export type ContractLoanData =
+  | readonly [
+      Address, // borrower
+      bigint, // amountRequested
+      bigint, // amountFunded
+      bigint, // termDuration
+      bigint, // interestRate
+      bigint, // createdAt
+      bigint, // vouchingDeadline
+      bigint, // crowdfundingDeadline
+      bigint, // repaymentDeadline
+      bigint, // gracePeriodEnd
+      LoanState, // state
+      bigint, // voucherCount
+    ]
+  | {
+      borrower: Address;
+      amountRequested: bigint;
+      amountFunded: bigint;
+      termDuration: bigint;
+      interestRate: bigint;
+      createdAt: bigint;
+      vouchingDeadline: bigint;
+      crowdfundingDeadline: bigint;
+      repaymentDeadline: bigint;
+      gracePeriodEnd: bigint;
+      state: LoanState;
+      voucherCount: bigint;
+    };
+
+/**
  * Loan data structure matching contract Loan struct
  */
 export interface Loan {

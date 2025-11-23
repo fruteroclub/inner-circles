@@ -1,74 +1,5 @@
 /**
  * Telegram Notification Service
-<<<<<<< HEAD
- * 
- * Sends informative notifications to participants about loan events.
- * This bot is read-only and only sends notifications - no interactive commands.
- */
-
-import { bot } from './bot'
-
-export interface LoanRequestNotification {
-  loanId: string
-  requesterAddress: string
-  requesterName?: string
-  amount: string
-  term: string
-  chatId: number
-}
-
-export interface VouchingAcceptedNotification {
-  loanId: string
-  voucherAddress: string
-  voucherName?: string
-  requesterAddress: string
-  requesterName?: string
-  chatId: number
-}
-
-export interface FundingObtainedNotification {
-  loanId: string
-  requesterAddress: string
-  requesterName?: string
-  amount: string
-  fundedAmount: string
-  chatId: number
-}
-
-export interface LoanAcceptedNotification {
-  loanId: string
-  requesterAddress: string
-  requesterName?: string
-  amount: string
-  interestRate: string
-  term: string
-  chatId: number
-}
-
-export interface LoanRepaidNotification {
-  loanId: string
-  requesterAddress: string
-  requesterName?: string
-  amount: string
-  chatId: number
-}
-
-export interface LoanDefaultNotification {
-  loanId: string
-  requesterAddress: string
-  requesterName?: string
-  amount: string
-  unpaidAmount: string
-  chatId: number
-}
-
-export interface TrustCancellationRecommendation {
-  loanId: string
-  requesterAddress: string
-  requesterName?: string
-  reason: string
-  chatId: number
-=======
  *
  * Sends informative notifications to participants about loan events.
  * This service provides functions to send notifications via Telegram bot.
@@ -86,10 +17,29 @@ const bot = TELEGRAM_BOT_TOKEN ? new Telegraf(TELEGRAM_BOT_TOKEN) : null;
  * Escape special characters for Telegram MarkdownV2 format
  */
 function escapeMarkdown(text: string): string {
-  const specialChars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!'];
+  const specialChars = [
+    "_",
+    "*",
+    "[",
+    "]",
+    "(",
+    ")",
+    "~",
+    "`",
+    ">",
+    "#",
+    "+",
+    "-",
+    "=",
+    "|",
+    "{",
+    "}",
+    ".",
+    "!",
+  ];
   let escaped = text;
   for (const char of specialChars) {
-    escaped = escaped.replace(new RegExp(`\\${char}`, 'g'), `\\${char}`);
+    escaped = escaped.replace(new RegExp(`\\${char}`, "g"), `\\${char}`);
   }
   return escaped;
 }
@@ -99,10 +49,10 @@ function escapeMarkdown(text: string): string {
  */
 function escapeHtml(text: string): string {
   return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 export interface LoanRequestNotification {
@@ -199,25 +149,6 @@ function getBaseUrl(): string {
 /**
  * Send notification about a new loan request
  */
-<<<<<<< HEAD
-export async function notifyLoanRequest(data: LoanRequestNotification): Promise<void> {
-  if (!bot) {
-    console.warn('Bot not initialized, cannot send notification')
-    return
-  }
-
-  const message = `📋 *New Loan Request*\n\n` +
-    `Loan ID: \`${data.loanId}\`\n` +
-    `Requester: ${data.requesterName || data.requesterAddress}\n` +
-    `Amount: ${data.amount}\n` +
-    `Term: ${data.term}\n\n` +
-    `The vouching phase has started.`
-
-  try {
-    await bot.telegram.sendMessage(data.chatId, message, { parse_mode: 'Markdown' })
-  } catch (error) {
-    console.error('Error sending loan request notification:', error)
-=======
 export async function notifyLoanRequest(
   data: LoanRequestNotification
 ): Promise<void> {
@@ -240,7 +171,9 @@ export async function notifyLoanRequest(
 
   // Escape user-provided content to prevent injection
   const safeLoanId = escapeMarkdown(data.loanId);
-  const safeRequesterName = escapeMarkdown(data.requesterName || data.requesterAddress);
+  const safeRequesterName = escapeMarkdown(
+    data.requesterName || data.requesterAddress
+  );
   const safeAmount = escapeMarkdown(data.amount);
   const safeTerm = escapeMarkdown(data.term);
 
@@ -271,10 +204,12 @@ export async function notifyLoanRequest(
     } else {
       // For HTTP/localhost, use HTML format with properly encoded URL
       const safeLoanIdHtml = escapeHtml(data.loanId);
-      const safeRequesterNameHtml = escapeHtml(data.requesterName || data.requesterAddress);
+      const safeRequesterNameHtml = escapeHtml(
+        data.requesterName || data.requesterAddress
+      );
       const safeAmountHtml = escapeHtml(data.amount);
       const safeTermHtml = escapeHtml(data.term);
-      
+
       const messageHtml =
         `📋 <b>New Loan Request</b>\n\n` +
         `Loan ID: <code>${safeLoanIdHtml}</code>\n` +
@@ -284,7 +219,7 @@ export async function notifyLoanRequest(
         `The vouching phase has started\\.\n\n` +
         `👆 Vouch for this loan:\n` +
         `<code>${escapeHtml(loanDetailsUrl)}</code>`;
-      
+
       await bot.telegram.sendMessage(chatId, messageHtml, {
         parse_mode: "HTML",
       });
@@ -294,10 +229,12 @@ export async function notifyLoanRequest(
     // Fallback: try with HTML format
     try {
       const safeLoanIdHtml = escapeHtml(data.loanId);
-      const safeRequesterNameHtml = escapeHtml(data.requesterName || data.requesterAddress);
+      const safeRequesterNameHtml = escapeHtml(
+        data.requesterName || data.requesterAddress
+      );
       const safeAmountHtml = escapeHtml(data.amount);
       const safeTermHtml = escapeHtml(data.term);
-      
+
       const messageHtml =
         `📋 <b>New Loan Request</b>\n\n` +
         `Loan ID: <code>${safeLoanIdHtml}</code>\n` +
@@ -307,7 +244,7 @@ export async function notifyLoanRequest(
         `The vouching phase has started\\.\n\n` +
         `👆 Vouch for this loan:\n` +
         `<code>${escapeHtml(loanDetailsUrl)}</code>`;
-      
+
       await bot.telegram.sendMessage(chatId, messageHtml, {
         parse_mode: "HTML",
       });
@@ -323,7 +260,7 @@ export async function notifyLoanRequest(
           `Term: ${data.term}\n\n` +
           `The vouching phase has started.\n\n` +
           `👆 Vouch for this loan:\n${loanDetailsUrl}`;
-        
+
         await bot.telegram.sendMessage(chatId, plainMessage);
       } catch (finalError) {
         console.error("Error sending final fallback notification:", finalError);
@@ -336,24 +273,6 @@ export async function notifyLoanRequest(
 /**
  * Send notification when vouching is accepted
  */
-<<<<<<< HEAD
-export async function notifyVouchingAccepted(data: VouchingAcceptedNotification): Promise<void> {
-  if (!bot) {
-    console.warn('Bot not initialized, cannot send notification')
-    return
-  }
-
-  const message = `✅ *Vouching Accepted*\n\n` +
-    `Loan ID: \`${data.loanId}\`\n` +
-    `Voucher: ${data.voucherName || data.voucherAddress}\n` +
-    `Has vouched for: ${data.requesterName || data.requesterAddress}\n\n` +
-    `Thank you for your support!`
-
-  try {
-    await bot.telegram.sendMessage(data.chatId, message, { parse_mode: 'Markdown' })
-  } catch (error) {
-    console.error('Error sending vouching accepted notification:', error)
-=======
 export async function notifyVouchingAccepted(
   data: VouchingAcceptedNotification
 ): Promise<void> {
@@ -386,25 +305,6 @@ export async function notifyVouchingAccepted(
 /**
  * Send notification when funding is obtained
  */
-<<<<<<< HEAD
-export async function notifyFundingObtained(data: FundingObtainedNotification): Promise<void> {
-  if (!bot) {
-    console.warn('Bot not initialized, cannot send notification')
-    return
-  }
-
-  const message = `💰 *Funding Obtained*\n\n` +
-    `Loan ID: \`${data.loanId}\`\n` +
-    `Requester: ${data.requesterName || data.requesterAddress}\n` +
-    `Requested: ${data.amount}\n` +
-    `Funded: ${data.fundedAmount}\n\n` +
-    `The loan is now fully funded and ready for disbursement.`
-
-  try {
-    await bot.telegram.sendMessage(data.chatId, message, { parse_mode: 'Markdown' })
-  } catch (error) {
-    console.error('Error sending funding obtained notification:', error)
-=======
 export async function notifyFundingObtained(
   data: FundingObtainedNotification
 ): Promise<void> {
@@ -438,26 +338,6 @@ export async function notifyFundingObtained(
 /**
  * Send notification when loan is accepted/started
  */
-<<<<<<< HEAD
-export async function notifyLoanAccepted(data: LoanAcceptedNotification): Promise<void> {
-  if (!bot) {
-    console.warn('Bot not initialized, cannot send notification')
-    return
-  }
-
-  const message = `🚀 *Loan Accepted & Started*\n\n` +
-    `Loan ID: \`${data.loanId}\`\n` +
-    `Borrower: ${data.requesterName || data.requesterAddress}\n` +
-    `Amount: ${data.amount}\n` +
-    `Interest Rate: ${data.interestRate}\n` +
-    `Term: ${data.term}\n\n` +
-    `Funds have been disbursed. Repayment window has started.`
-
-  try {
-    await bot.telegram.sendMessage(data.chatId, message, { parse_mode: 'Markdown' })
-  } catch (error) {
-    console.error('Error sending loan accepted notification:', error)
-=======
 export async function notifyLoanAccepted(
   data: LoanAcceptedNotification
 ): Promise<void> {
@@ -492,24 +372,6 @@ export async function notifyLoanAccepted(
 /**
  * Send notification when loan is repaid
  */
-<<<<<<< HEAD
-export async function notifyLoanRepaid(data: LoanRepaidNotification): Promise<void> {
-  if (!bot) {
-    console.warn('Bot not initialized, cannot send notification')
-    return
-  }
-
-  const message = `✅ *Loan Repaid*\n\n` +
-    `Loan ID: \`${data.loanId}\`\n` +
-    `Borrower: ${data.requesterName || data.requesterAddress}\n` +
-    `Amount: ${data.amount}\n\n` +
-    `The loan has been successfully repaid. Thank you!`
-
-  try {
-    await bot.telegram.sendMessage(data.chatId, message, { parse_mode: 'Markdown' })
-  } catch (error) {
-    console.error('Error sending loan repaid notification:', error)
-=======
 export async function notifyLoanRepaid(
   data: LoanRepaidNotification
 ): Promise<void> {
@@ -542,25 +404,6 @@ export async function notifyLoanRepaid(
 /**
  * Send notification when loan defaults
  */
-<<<<<<< HEAD
-export async function notifyLoanDefault(data: LoanDefaultNotification): Promise<void> {
-  if (!bot) {
-    console.warn('Bot not initialized, cannot send notification')
-    return
-  }
-
-  const message = `⚠️ *Loan Default*\n\n` +
-    `Loan ID: \`${data.loanId}\`\n` +
-    `Borrower: ${data.requesterName || data.requesterAddress}\n` +
-    `Original Amount: ${data.amount}\n` +
-    `Unpaid Amount: ${data.unpaidAmount}\n\n` +
-    `The borrower has failed to repay the loan.`
-
-  try {
-    await bot.telegram.sendMessage(data.chatId, message, { parse_mode: 'Markdown' })
-  } catch (error) {
-    console.error('Error sending loan default notification:', error)
-=======
 export async function notifyLoanDefault(
   data: LoanDefaultNotification
 ): Promise<void> {
@@ -598,25 +441,6 @@ export async function notifyTrustCancellationRecommendation(
   data: TrustCancellationRecommendation
 ): Promise<void> {
   if (!bot) {
-<<<<<<< HEAD
-    console.warn('Bot not initialized, cannot send notification')
-    return
-  }
-
-  const message = `🔻 *Trust Cancellation Recommendation*\n\n` +
-    `Loan ID: \`${data.loanId}\`\n` +
-    `User: ${data.requesterName || data.requesterAddress}\n` +
-    `Reason: ${data.reason}\n\n` +
-    `The system recommends removing trust from this user due to loan default.`
-
-  try {
-    await bot.telegram.sendMessage(data.chatId, message, { parse_mode: 'Markdown' })
-  } catch (error) {
-    console.error('Error sending trust cancellation recommendation:', error)
-  }
-}
-
-=======
     console.warn("Bot not initialized, cannot send notification");
     return;
   }

@@ -7,20 +7,6 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 
-// Load members data from JSON file
-function loadMembersData(): any[] {
-  try {
-    const filePath = join(process.cwd(), "data", "members.json");
-    const fileContents = readFileSync(filePath, "utf8");
-    return JSON.parse(fileContents);
-  } catch (error) {
-    console.warn("Could not load members.json:", error);
-    return [];
-  }
-}
-
-const membersData = loadMembersData();
-
 export interface Member {
   telegramUserId: number;
   telegramHandle: string;
@@ -32,14 +18,27 @@ export interface Member {
   lastUpdated: string;
 }
 
+// Load members data from JSON file
+function loadMembersData(): Member[] {
+  try {
+    const filePath = join(process.cwd(), "data", "members.json");
+    const fileContents = readFileSync(filePath, "utf8");
+    return JSON.parse(fileContents) as Member[];
+  } catch (error) {
+    console.warn("Could not load members.json:", error);
+    return [];
+  }
+}
+
+const membersData = loadMembersData();
+
 /**
  * Get member by Circles address
  */
 export function getMemberByAddress(circlesAddress: string): Member | null {
-  const members = membersData as Member[];
   const normalizedAddress = circlesAddress.toLowerCase();
   
-  return members.find(
+  return membersData.find(
     (member) => member.circlesAddress.toLowerCase() === normalizedAddress
   ) || null;
 }
@@ -56,6 +55,6 @@ export function getTelegramUserIdByAddress(circlesAddress: string): number | nul
  * Get all members
  */
 export function getAllMembers(): Member[] {
-  return membersData as Member[];
+  return membersData;
 }
 

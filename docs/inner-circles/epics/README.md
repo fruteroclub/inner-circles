@@ -5,6 +5,7 @@ This directory contains the epic documentation for implementing the complete Tel
 ## Epic Overview
 
 ### [Epic 0: Group Token Minting & Member Management](./epic-0-group-token-minting.md)
+
 **Status:** Ready for implementation  
 **Dependencies:** None  
 **Estimated Total Effort:** ~32 hours
@@ -12,6 +13,7 @@ This directory contains the epic documentation for implementing the complete Tel
 Establishes the foundational member management system and enables CRC group token minting functionality. This epic must be completed before Epic 1 as it provides the member data structure that other epics depend on.
 
 **Key Deliverables:**
+
 - Group member data structure
 - Member storage service
 - Circles SDK integration
@@ -22,6 +24,7 @@ Establishes the foundational member management system and enables CRC group toke
 ---
 
 ### [Epic 1: Foundation](./epic-1-foundation.md)
+
 **Status:** Ready for implementation  
 **Dependencies:** None  
 **Estimated Total Effort:** ~15 hours
@@ -29,6 +32,7 @@ Establishes the foundational member management system and enables CRC group toke
 Establishes the foundational infrastructure including backend service structure, contract interaction capabilities, user storage, and basic verification services.
 
 **Key Deliverables:**
+
 - Backend service architecture
 - Contract interaction service (viem)
 - User storage system
@@ -38,6 +42,7 @@ Establishes the foundational infrastructure including backend service structure,
 ---
 
 ### [Epic 2: Loan Request Flow](./epic-2-loan-request-flow.md)
+
 **Status:** Ready for implementation  
 **Dependencies:** Epic 1  
 **Estimated Total Effort:** ~16 hours
@@ -45,6 +50,7 @@ Establishes the foundational infrastructure including backend service structure,
 Implements the complete loan request flow through the Telegram bot, including user verification, loan creation via smart contract, posting to Telegram group, and tracking.
 
 **Key Deliverables:**
+
 - Enhanced `/request_loan` command
 - Loan creation service
 - Loan storage system
@@ -54,6 +60,7 @@ Implements the complete loan request flow through the Telegram bot, including us
 ---
 
 ### [Epic 3: Vouching System](./epic-3-vouching-system.md)
+
 **Status:** Ready for implementation  
 **Dependencies:** Epic 1, Epic 2  
 **Estimated Total Effort:** ~19 hours
@@ -61,6 +68,7 @@ Implements the complete loan request flow through the Telegram bot, including us
 Implements the vouching system where Telegram group members can vouch for loan requests by reacting with an emoji, triggering on-chain contract interactions.
 
 **Key Deliverables:**
+
 - Reaction handler for 👍 emoji
 - Vouching service with contract integration
 - Interest rate calculator
@@ -70,6 +78,7 @@ Implements the vouching system where Telegram group members can vouch for loan r
 ---
 
 ### [Epic 4: Loan Management](./epic-4-loan-management.md)
+
 **Status:** Ready for implementation  
 **Dependencies:** Epic 1, Epic 2, Epic 3  
 **Estimated Total Effort:** ~23 hours
@@ -77,6 +86,7 @@ Implements the vouching system where Telegram group members can vouch for loan r
 Implements loan management features including enhanced loan status display, loan confirmation flow, repayment functionality, and grace period notification system.
 
 **Key Deliverables:**
+
 - Enhanced `/loan_status` command
 - Loan confirmation flow
 - Repayment functionality
@@ -87,6 +97,7 @@ Implements loan management features including enhanced loan status display, loan
 ---
 
 ### [Epic 5: Default Handling](./epic-5-default-handling.md)
+
 **Status:** Ready for implementation  
 **Dependencies:** Epic 1, Epic 2, Epic 3, Epic 4  
 **Estimated Total Effort:** ~20 hours
@@ -94,6 +105,7 @@ Implements loan management features including enhanced loan status display, loan
 Implements default detection and handling for loans that are not repaid within the grace period, including trust revocation and notifications.
 
 **Key Deliverables:**
+
 - Default detection system
 - Remove Trust recommendation posting
 - ENS membership revocation (backend)
@@ -103,6 +115,7 @@ Implements default detection and handling for loans that are not repaid within t
 ---
 
 ### [Epic 6: ENS Integration](./epic-6-ens-integration.md)
+
 **Status:** Ready for implementation  
 **Dependencies:** Epic 1, Epic 2, Epic 3, Epic 4, Epic 5  
 **Estimated Total Effort:** ~23 hours
@@ -110,6 +123,7 @@ Implements default detection and handling for loans that are not repaid within t
 Implements ENS membership verification and management as a backend service managed entirely by the Telegram bot (no on-chain contract).
 
 **Key Deliverables:**
+
 - ENS service (backend-only)
 - Admin commands for ENS management
 - ENS integration into user verification
@@ -137,6 +151,7 @@ Epics should be implemented sequentially:
 ## Epic Structure
 
 Each epic document follows this structure:
+
 - **Description:** Overview of the epic
 - **Acceptance Criteria:** High-level requirements
 - **Tickets:** Detailed tickets with:
@@ -169,4 +184,3 @@ Each epic document follows this structure:
 - All contract interactions use viem
 - Circles SDK integration required for group token operations
 - TypeScript strict mode for type safety
-

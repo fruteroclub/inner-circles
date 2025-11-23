@@ -1,0 +1,44 @@
+Feedback Comments – Circles Hackathon Obstacles
+
+1. Onboarding and Passkey Creation Issues
+
+  One participant using a latest-generation iPhone was unable to create their profile due to a repeated “passkey creation failed” error.
+
+  We could not identify the cause because there is no troubleshooting guide, no logs exposed to the user, and no explanation of potential failure modes.
+
+  This blocked their onboarding entirely, which is a critical failure in the user journey.
+
+2. Difficulty Finding the Circles Group Token Address
+
+  The token address for the Circles group is not easily accessible.
+
+  It requires navigating multiple pages or guessing the right link.
+
+  A direct, clearly labeled “Token Address” field in the main interface or documentation would solve this instantly.
+
+3. Non-Unique Usernames Create Confusion
+
+  Users can choose any display name, and most assume they are selecting a unique one.
+
+  Later, when searching for a user by name, dozens of identical names appear, making it almost impossible to identify the correct person.
+
+  We strongly recommend implementing a unique username or handle (even if the display name remains flexible), ideally surfaced alongside the wallet address to improve clarity and prevent user-side errors.
+
+4. Wrong Link in the App (Gnosis vs Metrí)
+
+  In app.metri.xyz, the “send” flow contains a link pointing to app.gnosis.io, which breaks the expected continuity and confuses users.
+
+  This link should redirect to the correct Metrí-native flow or be updated to the appropriate Gnosis action endpoint.
+
+5. Confusing Entity Model (Person Avatars vs Group Avatars vs Wallets)
+
+  The UI and documentation describe different entities (e.g., person avatar, group avatar) but these are not clearly linked to the wallet or to each other.
+
+  Users cannot easily understand which entity represents the individual, the group, or the operational wallet.
+
+  The conceptual model feels fragmented and cognitively exhausting. Clear diagrams or a unified explanation would help significantly.
+
+6. Documentation Mentions “Contract Runner” Without Context
+
+  The documentation refers to a “contract runner”, but there is no explanation of what it is, what its responsibilities are, why it appears, or how the user is expected to interact with it.
+

@@ -9,6 +9,14 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@aboutcircles/sdk": "^0.1.2",
+    "@aboutcircles/sdk-core": "^0.1.1",
+    "@aboutcircles/sdk-pathfinder": "^0.1.1",
+    "@aboutcircles/sdk-profiles": "^0.1.1",
+    "@aboutcircles/sdk-rpc": "^0.1.1",
+    "@aboutcircles/sdk-runner": "^0.1.1",
+    "@aboutcircles/sdk-transfers": "^0.1.1",
+    "@aboutcircles/sdk-types": "^0.1.1",
     "@privy-io/react-auth": "^3.7.0",
     "@privy-io/wagmi": "^2.0.2",
     "@radix-ui/react-dialog": "^1.1.15",

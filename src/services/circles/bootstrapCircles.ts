@@ -8,7 +8,7 @@ export async function bootstrapCircles() {
 
   const sdk = new Sdk(circlesConfig[100], runner);
   const avatar = await sdk.getAvatar(
-    "0xf6e5f26d647fc0494e749823e7feb33df3641acc"
+    "0xdb79330aD7b5F38293f54862E812EF42632c0b3B"
   );
 
   const profile = await avatar.profile.get();

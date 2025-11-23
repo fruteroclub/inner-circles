@@ -7,9 +7,7 @@ const alchemyApiKey = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;
 // Fallback to public RPCs if Alchemy key is not available
 const getTransports = () => {
   // Gnosis Chain transport - use Circles RPC if available, fallback to public Gnosis RPC
-  const gnosisTransport = http(
-    `https://gnosis-mainnet.g.alchemy.com/v2/${alchemyApiKey}`
-  );
+  const gnosisTransport = http();
 
   if (alchemyApiKey) {
     return {

@@ -88,24 +88,36 @@ export function LoanRequestForm({
     createLoanRequest(input);
   }
 
-  if (isSuccess && loanId) {
-    return (
-      <div className={className}>
-        <div className="rounded-lg border border-green-500 bg-green-50 p-6 dark:bg-green-950">
-          <h3 className="text-lg font-semibold text-green-900 dark:text-green-100">
-            Loan Request Created!
-          </h3>
-          <p className="mt-2 text-green-700 dark:text-green-300">
-            Your loan request #{loanId.toString()} has been created
-            successfully. The vouching period has started.
-          </p>
-          <Button onClick={reset} variant="outline" className="mt-4">
-            Create Another Loan
-          </Button>
-        </div>
-      </div>
-    );
-  }
+      if (isSuccess && loanId) {
+        return (
+          <div className={className}>
+            <div className="rounded-lg border border-green-500 bg-green-50 p-6 dark:bg-green-950">
+              <h3 className="text-lg font-semibold text-green-900 dark:text-green-100">
+                Loan Request Created!
+              </h3>
+              <p className="mt-2 text-green-700 dark:text-green-300">
+                Your loan request #{loanId.toString()} has been created
+                successfully. The vouching period has started.
+              </p>
+              <div className="mt-4 flex gap-2">
+                <Button
+                  onClick={() => {
+                    if (onSuccess) {
+                      onSuccess(loanId);
+                    }
+                  }}
+                  variant="default"
+                >
+                  View Loan Details
+                </Button>
+                <Button onClick={reset} variant="outline">
+                  Create Another Loan
+                </Button>
+              </div>
+            </div>
+          </div>
+        );
+      }
 
   return (
     <form onSubmit={handleSubmit} className={className}>

@@ -143,7 +143,6 @@ function getBaseUrl(): string {
   // For production, you should set NEXT_PUBLIC_APP_URL
   // This is a fallback that might not work in all cases
   return "https://your-domain.com";
->>>>>>> 6757ca5 (finish loan fulfillment and disbursement)
 }
 
 /**
@@ -266,7 +265,6 @@ export async function notifyLoanRequest(
         console.error("Error sending final fallback notification:", finalError);
       }
     }
->>>>>>> 6757ca5 (finish loan fulfillment and disbursement)
   }
 }
 
@@ -298,7 +296,6 @@ export async function notifyVouchingAccepted(
     await bot.telegram.sendMessage(chatId, message, { parse_mode: "Markdown" });
   } catch (error) {
     console.error("Error sending vouching accepted notification:", error);
->>>>>>> 6757ca5 (finish loan fulfillment and disbursement)
   }
 }
 
@@ -331,7 +328,6 @@ export async function notifyFundingObtained(
     await bot.telegram.sendMessage(chatId, message, { parse_mode: "Markdown" });
   } catch (error) {
     console.error("Error sending funding obtained notification:", error);
->>>>>>> 6757ca5 (finish loan fulfillment and disbursement)
   }
 }
 
@@ -365,7 +361,6 @@ export async function notifyLoanAccepted(
     await bot.telegram.sendMessage(chatId, message, { parse_mode: "Markdown" });
   } catch (error) {
     console.error("Error sending loan accepted notification:", error);
->>>>>>> 6757ca5 (finish loan fulfillment and disbursement)
   }
 }
 
@@ -397,7 +392,6 @@ export async function notifyLoanRepaid(
     await bot.telegram.sendMessage(chatId, message, { parse_mode: "Markdown" });
   } catch (error) {
     console.error("Error sending loan repaid notification:", error);
->>>>>>> 6757ca5 (finish loan fulfillment and disbursement)
   }
 }
 
@@ -430,7 +424,6 @@ export async function notifyLoanDefault(
     await bot.telegram.sendMessage(chatId, message, { parse_mode: "Markdown" });
   } catch (error) {
     console.error("Error sending loan default notification:", error);
->>>>>>> 6757ca5 (finish loan fulfillment and disbursement)
   }
 }
 
@@ -464,4 +457,3 @@ export async function notifyTrustCancellationRecommendation(
     console.error("Error sending trust cancellation recommendation:", error);
   }
 }
->>>>>>> 6757ca5 (finish loan fulfillment and disbursement)

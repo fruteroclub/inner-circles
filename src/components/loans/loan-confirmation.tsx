@@ -50,11 +50,6 @@ export function LoanConfirmation({
   // Check if minimum vouchers requirement is met
   const hasMinimumVouchers = loan.voucherCount >= BigInt(3);
 
-  // Get interest rate directly from contract to ensure it's always accurate
-  const { interestRate: contractInterestRate } = useCalculateInterestRate(
-    loan.voucherCount
-  );
-
   // Use contract rate if available, otherwise fall back to local calculation
   const interestRateBasisPoints =
     contractInterestRate !== undefined

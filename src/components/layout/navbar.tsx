@@ -42,12 +42,16 @@ export default function Navbar() {
         <Link className="flex items-center" href="/">
           <Image
             src="/images/logos/token.png"
-            alt="Circles Credit logo"
+            alt="(Inner Circles) logo"
             width={32}
             height={32}
             className="mr-2"
           />
-          <span className="text-2xl font-bold">Circles Credit</span>
+          <span className="text-2xl font-bold text-[#4941AD]">(Inner</span>
+
+          <span className="ml-0.5 text-2xl font-bold text-[#FE5855]">
+            Circles)
+          </span>
         </Link>
         <div className="z-10 col-span-3 flex items-center justify-center">
           <nav className="hidden gap-4 lg:flex">

@@ -7,6 +7,65 @@ import { lendingMarketContract } from "@/lib/contracts/config";
 import { useCreateLoanRequest } from "./useCreateLoanRequest";
 import type { LoanRequestResult } from "@/types/loans";
 
+/**
+ * Trigger Telegram notification for loan request
+ */
+async function triggerTelegramNotification(
+  result: LoanRequestResult
+): Promise<void> {
+  console.log("Triggering Telegram notification for loan request:", {
+    loanId: result.loanId.toString(),
+    borrower: result.borrower,
+  });
+
+  try {
+    const payload = {
+      loanId: result.loanId.toString(),
+      borrowerAddress: result.borrower,
+      amountRequested: result.amountRequested.toString(),
+      termDuration: result.termDuration.toString(),
+    };
+
+    console.log("Sending notification request:", payload);
+
+    const response = await fetch("/api/telegram/notify-loan-request", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    console.log("Notification API response status:", response.status);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage =
+        errorData.error || `HTTP ${response.status}: ${response.statusText}`;
+      console.error("Notification API error:", errorMessage, errorData);
+      throw new Error(errorMessage);
+    }
+
+    const data = await response.json();
+    console.log("Notification API response:", data);
+
+    if (data.success) {
+      console.log(
+        "✅ Telegram notification sent successfully to:",
+        data.telegramUserId
+      );
+    } else {
+      console.warn("⚠️ Notification API returned success=false:", data);
+    }
+  } catch (error) {
+    // Log error but don't throw - notification failure shouldn't block the flow
+    console.error("❌ Error triggering Telegram notification:", error);
+    if (error instanceof Error) {
+      console.error("Error details:", error.message, error.stack);
+    }
+  }
+}
+
 interface UseCreateLoanRequestWithEventsOptions {
   onSuccess?: (result: LoanRequestResult) => void;
   onError?: (error: Error) => void;
@@ -107,6 +166,13 @@ export function useCreateLoanRequestWithEvents({
         };
 
         toast.success(`Loan request #${loanId.toString()} created!`);
+
+        // Trigger Telegram notification
+        triggerTelegramNotification(result).catch((error) => {
+          console.error("Failed to send Telegram notification:", error);
+          // Don't block the success flow if notification fails
+        });
+
         onSuccess?.(result);
       }
     },
@@ -187,6 +253,13 @@ export function useCreateLoanRequestWithEvents({
                   : loanData.termDuration,
               };
               toast.success(`Loan request #${newLoanId.toString()} created!`);
+
+              // Trigger Telegram notification
+              triggerTelegramNotification(result).catch((error) => {
+                console.error("Failed to send Telegram notification:", error);
+                // Don't block the success flow if notification fails
+              });
+
               onSuccess?.(result);
             }
           } catch (error) {

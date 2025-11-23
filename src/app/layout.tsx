@@ -7,7 +7,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { fonts } from "@/lib/fonts";
 
 export const metadata: Metadata = {
-  title: "Circles Credit",
+  title: "(Inner Circles)",
   description: "A community-driven, reputation-based credit system",
   icons: [{ rel: "icon", url: "/images/logos/token.png" }],
 };

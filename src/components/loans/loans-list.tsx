@@ -9,6 +9,12 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { LoanActions } from "./loan-actions";
+import { AdminTimeSimulation } from "./admin-time-simulation";
+import {
+  calculateInterestRate,
+  formatInterestRate,
+} from "@/lib/utils/loan-utils";
+import { useCalculateInterestRate } from "@/services/loans/useCalculateInterestRate";
 
 interface LoansListProps {
   className?: string;
@@ -26,23 +32,29 @@ const stateLabels: Record<LoanState, string> = {
 };
 
 const stateColors: Record<LoanState, string> = {
-  [LoanState.Requested]: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
-  [LoanState.Vouching]: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-  [LoanState.Crowdfunding]: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-  [LoanState.Funded]: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-  [LoanState.Repaid]: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-  [LoanState.Defaulted]: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+  [LoanState.Requested]:
+    "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
+  [LoanState.Vouching]:
+    "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+  [LoanState.Crowdfunding]:
+    "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+  [LoanState.Funded]:
+    "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+  [LoanState.Repaid]:
+    "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+  [LoanState.Defaulted]:
+    "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
 };
 
-export function LoansList({ 
-  className, 
+export function LoansList({
+  className,
   showAll = false,
-  showRepaid = false 
+  showRepaid = false,
 }: LoansListProps) {
   const { address } = useAccount();
   const router = useRouter();
   const { loans, isLoading, isError, error, refetch } = useAllLoans();
-  
+
   // Stable callback to prevent infinite loops
   const handleActionSuccess = useCallback(() => {
     // Use setTimeout to debounce refetch and prevent rapid successive calls
@@ -163,7 +175,9 @@ export function LoansList({
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
                       <h3 className="text-lg font-semibold font-funnel">
-                        {loanId ? `Loan #${loanId.toString()}` : `Loan #${index + 1}`}
+                        {loanId
+                          ? `Loan #${loanId.toString()}`
+                          : `Loan #${index + 1}`}
                       </h3>
                       <span
                         className={cn(
@@ -176,8 +190,10 @@ export function LoansList({
                     </div>
                     <div className="text-sm text-muted-foreground">
                       {loan.state === LoanState.Requested && "Awaiting vouches"}
-                      {loan.state === LoanState.Vouching && "Vouching period active"}
-                      {loan.state === LoanState.Crowdfunding && "Open for funding"}
+                      {loan.state === LoanState.Vouching &&
+                        "Vouching period active"}
+                      {loan.state === LoanState.Crowdfunding &&
+                        "Open for funding"}
                       {loan.state === LoanState.Funded && "Loan active"}
                       {loan.state === LoanState.Repaid && "Loan completed"}
                       {loan.state === LoanState.Defaulted && "Loan defaulted"}
@@ -211,17 +227,42 @@ export function LoansList({
                         Interest Rate
                       </p>
                       <p className="text-lg font-semibold">
-                        {(Number(loan.interestRate) / 100).toFixed(2)}%
+                        {loan.state === LoanState.Vouching ||
+                        loan.state === LoanState.Requested
+                          ? loan.voucherCount >= BigInt(3)
+                            ? formatInterestRate(
+                                BigInt(calculateInterestRate(loan.voucherCount))
+                              )
+                            : "—"
+                          : formatInterestRate(loan.interestRate)}
                       </p>
+                      {(loan.state === LoanState.Vouching ||
+                        loan.state === LoanState.Requested) &&
+                        loan.voucherCount < BigInt(3) && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Need {Number(BigInt(3) - loan.voucherCount)} more
+                            voucher
+                            {Number(BigInt(3) - loan.voucherCount) > 1
+                              ? "s"
+                              : ""}
+                          </p>
+                        )}
                     </div>
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 items-end">
-                  <LoanActions 
-                    loan={loan} 
+                  <LoanActions
+                    loan={loan}
                     loanId={loanId}
                     onActionSuccess={handleActionSuccess}
                   />
+                  {loanId && (
+                    <AdminTimeSimulation
+                      loanId={loanId}
+                      loan={loan}
+                      onActionSuccess={handleActionSuccess}
+                    />
+                  )}
                   <Button
                     variant="outline"
                     onClick={(e) => {
@@ -242,4 +283,3 @@ export function LoansList({
     </div>
   );
 }
-

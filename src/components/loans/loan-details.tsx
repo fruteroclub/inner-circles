@@ -5,6 +5,15 @@ import { LoanState } from "@/types/loans";
 import { formatEther } from "viem";
 import { cn } from "@/lib/utils";
 import { LoanActions } from "./loan-actions";
+import { LoanConfirmation } from "./loan-confirmation";
+import { LoanDisbursement } from "./loan-disbursement";
+import { LoanRepayment } from "./loan-repayment";
+import { AdminTimeSimulation } from "./admin-time-simulation";
+import {
+  calculateInterestRate,
+  formatInterestRate,
+} from "@/lib/utils/loan-utils";
+import { useCalculateInterestRate } from "@/services/loans/useCalculateInterestRate";
 
 interface LoanDetailsProps {
   loanId: bigint;
@@ -35,17 +44,23 @@ function formatTimestamp(timestamp: bigint): string {
 
   if (Math.abs(diffDays) > 0) {
     const days = Math.abs(diffDays);
-    return diffDays > 0 ? `in ${days} day${days > 1 ? "s" : ""}` : `${days} day${days > 1 ? "s" : ""} ago`;
+    return diffDays > 0
+      ? `in ${days} day${days > 1 ? "s" : ""}`
+      : `${days} day${days > 1 ? "s" : ""} ago`;
   }
 
   if (Math.abs(diffHours) > 0) {
     const hours = Math.abs(diffHours);
-    return diffHours > 0 ? `in ${hours} hour${hours > 1 ? "s" : ""}` : `${hours} hour${hours > 1 ? "s" : ""} ago`;
+    return diffHours > 0
+      ? `in ${hours} hour${hours > 1 ? "s" : ""}`
+      : `${hours} hour${hours > 1 ? "s" : ""} ago`;
   }
 
   if (Math.abs(diffMinutes) > 0) {
     const minutes = Math.abs(diffMinutes);
-    return diffMinutes > 0 ? `in ${minutes} minute${minutes > 1 ? "s" : ""}` : `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+    return diffMinutes > 0
+      ? `in ${minutes} minute${minutes > 1 ? "s" : ""}`
+      : `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
   }
 
   return diffSeconds > 0 ? "in a few seconds" : "a few seconds ago";
@@ -53,6 +68,13 @@ function formatTimestamp(timestamp: bigint): string {
 
 export function LoanDetails({ loanId, className }: LoanDetailsProps) {
   const { loan, isLoading, isError, error, refetch } = useLoanDetails(loanId);
+
+  // For vouching loans, get interest rate directly from contract to ensure it's always up-to-date
+  const { interestRate: contractInterestRate } = useCalculateInterestRate(
+    loan?.state === LoanState.Vouching || loan?.state === LoanState.Requested
+      ? loan?.voucherCount
+      : undefined
+  );
 
   if (isLoading) {
     return (
@@ -121,8 +143,26 @@ export function LoanDetails({ loanId, className }: LoanDetailsProps) {
           <div>
             <p className="text-sm text-muted-foreground">Interest Rate</p>
             <p className="text-lg font-semibold">
-              {(Number(loan.interestRate) / 100).toFixed(2)}%
+              {loan.state === LoanState.Vouching ||
+              loan.state === LoanState.Requested
+                ? loan.voucherCount >= BigInt(3)
+                  ? contractInterestRate !== undefined
+                    ? formatInterestRate(contractInterestRate)
+                    : formatInterestRate(
+                        BigInt(calculateInterestRate(loan.voucherCount))
+                      )
+                  : "—"
+                : formatInterestRate(loan.interestRate)}
             </p>
+            {(loan.state === LoanState.Vouching ||
+              loan.state === LoanState.Requested) &&
+              loan.voucherCount < BigInt(3) && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Need {Number(BigInt(3) - loan.voucherCount)} more voucher
+                  {Number(BigInt(3) - loan.voucherCount) > 1 ? "s" : ""} to
+                  calculate rate
+                </p>
+              )}
           </div>
         </div>
 
@@ -137,14 +177,74 @@ export function LoanDetails({ loanId, className }: LoanDetailsProps) {
         {loan.state === LoanState.Crowdfunding && (
           <div className="rounded-md border border-yellow-200 bg-yellow-50 p-4 dark:bg-yellow-950">
             <p className="text-sm text-yellow-800 dark:text-yellow-200">
-              Crowdfunding deadline: {formatTimestamp(loan.crowdfundingDeadline)}
+              Crowdfunding deadline:{" "}
+              {formatTimestamp(loan.crowdfundingDeadline)}
             </p>
           </div>
         )}
 
+        {/* Borrower actions: Confirm loan terms */}
+        {loan.state === LoanState.Vouching && (
+          <div className="mt-6 pt-6 border-t">
+            <LoanConfirmation
+              loanId={loanId}
+              loan={loan}
+              onActionSuccess={() => {
+                setTimeout(() => {
+                  refetch();
+                }, 1000);
+              }}
+            />
+          </div>
+        )}
+
+        {/* Borrower actions: Disburse loan */}
+        {loan.state === LoanState.Crowdfunding && (
+          <div className="mt-6 pt-6 border-t">
+            <LoanDisbursement
+              loanId={loanId}
+              loan={loan}
+              onActionSuccess={() => {
+                setTimeout(() => {
+                  refetch();
+                }, 1000);
+              }}
+            />
+          </div>
+        )}
+
+        {/* Borrower actions: Repay loan */}
+        {loan.state === LoanState.Funded && (
+          <div className="mt-6 pt-6 border-t">
+            <LoanRepayment
+              loanId={loanId}
+              loan={loan}
+              onActionSuccess={() => {
+                setTimeout(() => {
+                  refetch();
+                }, 1000);
+              }}
+            />
+          </div>
+        )}
+
+        {/* Admin: Time simulation */}
         <div className="mt-6 pt-6 border-t">
-          <LoanActions 
-            loan={loan} 
+          <AdminTimeSimulation
+            loanId={loanId}
+            loan={loan}
+            onActionSuccess={() => {
+              setTimeout(() => {
+                refetch();
+              }, 1000);
+            }}
+          />
+        </div>
+
+        {/* Lender actions: Vouch/Contribute */}
+        <div className="mt-6 pt-6 border-t">
+          <LoanActions
+            loan={loan}
             loanId={loanId}
             onActionSuccess={() => {
               // Use setTimeout to debounce refetch and prevent rapid successive calls
@@ -158,4 +258,3 @@ export function LoanDetails({ loanId, className }: LoanDetailsProps) {
     </div>
   );
 }
-

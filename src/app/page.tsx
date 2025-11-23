@@ -6,7 +6,7 @@ export default function Home() {
   return (
     <PageWrapper>
       <Section>
-        <h1 className="text-4xl font-bold">Hola Circles Credit</h1>
+        <h1 className="text-4xl font-bold">Hola (Inner Circles)</h1>
         <BootstrapCirclesButton>Bootstrap Circles</BootstrapCirclesButton>
       </Section>
     </PageWrapper>
